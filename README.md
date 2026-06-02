@@ -11,7 +11,7 @@ Post-quantum cryptography primitives for Rust. Every algorithm is fixed at NIST 
 | `ots` | Winternitz one-time signatures |
 | `prf` | cSHAKE256 / KMAC256 PRF suite |
 | `strobe` | Strobe-based authenticated transports (NK and KK patterns) |
-| `symmetric` | ChaCha20-Poly1305 cipher and nonce types |
+| `symmetric` | AEGIS-256X2 and ChaCha20-Poly1305 ciphers |
 | `classic` | X25519 key pair (used inside Strobe transports) |
 
 ## Usage
@@ -76,6 +76,35 @@ let derived = cshake256::kdf(&key_material, b"my-app/session-key/v1");
 ```
 
 All PRF functions produce 64-byte (512-bit) output by default, retaining ~256-bit post-quantum preimage resistance. Use `finalize_xof` for variable-length output.
+
+### Symmetric encryption
+
+Two ciphers are available under `symmetric`:
+
+**AEGIS-256X2** (`symmetric::aegis`) — preferred for large payloads on hardware with AES instructions (AES-NI on x86-64, Crypto Extensions on ARM). Runs two AEGIS-256 instances in parallel, typically 3–5× faster than ChaCha20-Poly1305 for bulk data.
+
+**ChaCha20-Poly1305** (`symmetric::chacha20poly1305`) — preferred for many small independent messages, where AEGIS's per-message key-schedule cost outweighs its throughput advantage.
+
+| Property | AEGIS-256X2 | ChaCha20-Poly1305 |
+|----------|-------------|-------------------|
+| Key | 256 bits (32 B) | 256 bits (32 B) |
+| Nonce | 256 bits (32 B) | 96 bits (12 B) |
+| Tag | 256 bits (32 B) | 128 bits (16 B) |
+| Best for | Large payloads, AES hardware | Small messages, software-only |
+
+`AegisCipher` takes both key and nonce at construction and consumes `self` on use, making it a compile-time error to reuse the same `(key, nonce)` pair.
+
+```rust
+use issachar::symmetric::aegis::{AegisCipher, TAG_LEN};
+
+let cipher = AegisCipher::new(&key, &nonce);
+cipher.encrypt(aad, plaintext, &mut ciphertext_buf)?;
+
+let cipher = AegisCipher::new(&key, &nonce);
+cipher.decrypt(aad, &ciphertext_buf, &mut plaintext_buf)?;
+```
+
+For streaming large payloads, split into fixed-size chunks and derive a per-chunk nonce (e.g. base nonce XOR little-endian chunk index). Each chunk carries its own 32-byte tag and is authenticated immediately.
 
 ### Strobe transports
 
