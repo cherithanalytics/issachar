@@ -264,7 +264,7 @@ impl Strobe {
         let flags = FLAG_I | FLAG_C | FLAG_T | if meta { FLAG_M } else { 0 };
         self.begin_op(flags);
         self.duplex_mut(data, true, false);
-        if crate::utils::timing_safe_eq(data, &[0u8; N]) {
+        if crate::timing_safe_eq(data, &[0u8; N]) {
             Ok(())
         } else {
             Err(StrobeError::MacVerificationFailed)
