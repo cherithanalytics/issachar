@@ -21,7 +21,7 @@ RSA and elliptic-curve cryptography have accumulated decades of public cryptanal
 
 - ML-KEM and ML-DSA were standardized in 2024 and have roughly ten years of serious public scrutiny behind them.
 - SPHINCS+ is similarly old, yet built upon decades of research into pseudorandom functions and the random oracle model. 
-- FrodoKEM is similarly old, yet built on the more conservative LWE Problem (as opposed to ML-KEM).
+- FrodoKEM is similarly old, yet built on the more conservative unstructured LWE Problem (as opposed to ML-KEM).
 - Classic McEliece has resisted attack for over fifty years and whose security reduction is tight and well-understood.
 
 We recognize this library is not for everyone: It is extremely conservative at the expense of performance. The extra security margin of Level 5 over Level 3 is a direct hedge against cryptanalytic advances that have not happened yet but cannot be ruled out over a fifty-year planning horizon. 
@@ -173,6 +173,10 @@ Use ML-KEM for ephemeral keys. Use Classic McEliece as a static server key when 
 ## no_std
 
 The crate is `#![no_std]` and links `alloc` for the heap-allocated key types from the underlying `oqs` bindings. The one `std`-gated API is `prf::cshake256::CShake256::update_read`, which takes a `BufReader`.
+
+## Disclaimer
+
+This library has not undergone a formal security audit. It is provided as-is, without warranty of any kind. Do not deploy it in production systems without independent review by qualified cryptographers.
 
 ## Building
 
