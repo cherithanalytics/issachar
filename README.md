@@ -12,7 +12,14 @@ Christian ministries (Bible translation organizations, mission networks, humanit
 
 Most ministries do not have a dedicated security engineering team. Most general-purpose cryptography libraries leave the choice of algorithm and security level to the caller. This crate makes the conservative choice once: every algorithm is fixed at NIST Level 5 and there are no lower-security variants to accidentally select. The goal is a library that ministry-facing applications can depend on without requiring the authors to reason about which security level is "good enough."
 
-Level 5 is also the appropriate choice given how young most of these algorithms are. RSA and elliptic-curve cryptography have accumulated decades of public cryptanalysis; the community has high confidence in their concrete security at their standard parameter sizes. Most post-quantum algorithms do not have that history. ML-KEM and ML-DSA were standardized in 2024 and have roughly ten years of serious public scrutiny behind them — a short track record for primitives being trusted with long-lived secrets. SPHINCS+ is similarly young. The one exception is Classic McEliece, whose underlying hard problem (decoding random binary Goppa codes) has resisted attack for over fifty years and whose security reduction to a well-studied coding-theory problem is tight and well-understood. For everything else, the extra security margin of Level 5 over Level 3 is a direct hedge against cryptanalytic advances that have not happened yet but cannot be ruled out over a fifty-year planning horizon.
+Level 5 is an appropriate choice given how young most of these algorithms are. RSA and elliptic-curve cryptography have accumulated decades of public cryptanalysis. Most cryptographers have high confidence in their concrete security at standard parameter sizes. The post-quantum landscape is a bit less straightforward: 
+
+- ML-KEM and ML-DSA were standardized in 2024 and have roughly ten years of serious public scrutiny behind them.
+- SPHINCS+ is similarly young, albeit built upon decades of research into pseudorandom functions and the random oracle model. 
+- FrodoKEM is young, yet built on the more conservative LWE Problem (as opposed to ML-KEM).
+- Classic McEliece is included because its underlying hard problem (decoding random binary Goppa codes) has resisted attack for over fifty years and whose security reduction to a well-studied coding-theory problem is tight and well-understood. 
+
+The extra security margin of Level 5 over Level 3 is a direct hedge against cryptanalytic advances that have not happened yet but cannot be ruled out over a fifty-year planning horizon.
 
 ## Modules
 
