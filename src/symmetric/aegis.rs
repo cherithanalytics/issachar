@@ -32,10 +32,12 @@
 //!
 //! [`AegisCipher::new`] takes both the key and the nonce because the
 //! underlying `Aegis256X2::new` requires both to initialise its state.  The
-//! raw bytes are stored inside the `Aegis256X2` object; the underlying crate
-//! does not implement `Zeroize`, so the key is not explicitly scrubbed on
-//! drop.  All operations on `AegisCipher` consume `self`, making it a
-//! compile-time error to reuse the same `(key, nonce)` pair across two
+//! underlying crate does not implement `Zeroize`, so [`AegisCipher`] implements
+//! `Drop` manually: it overwrites every byte of the struct (the full initialised
+//! AEGIS state in the pure-Rust backend, or the raw key+nonce in the C backend)
+//! with zeros using volatile writes, preventing compiler optimisation from
+//! eliding the scrub.  All operations on `AegisCipher` consume `self`, making
+//! it a compile-time error to reuse the same `(key, nonce)` pair across two
 //! different calls.
 //!
 //! # Streaming large payloads
@@ -64,9 +66,7 @@ pub const NONCE_LEN: usize = 32;
 pub struct AegisCipher(Aegis256X2<TAG_LEN>);
 
 impl AegisCipher {
-    /// Initialises the cipher.  The AEGIS key schedule runs here; the raw
-    /// key and nonce bytes are stored inside `Aegis256X2` (the underlying
-    /// crate does not implement `Zeroize`).
+    /// Initialises the cipher.  The AEGIS key schedule runs here.
     pub fn new(key: &[u8; 32], nonce: &[u8; NONCE_LEN]) -> Self {
         Self(Aegis256X2::new(key, nonce))
     }
@@ -109,6 +109,23 @@ impl AegisCipher {
             return Err(Error::AuthenticationFailed);
         }
         Ok(())
+    }
+}
+
+impl Drop for AegisCipher {
+    fn drop(&mut self) {
+        use zeroize::Zeroize;
+        // Safety: AegisCipher contains only plain data (no heap pointers) in
+        // both the pure-Rust and C backends.  We cast to a byte slice covering
+        // the entire struct and use zeroize's volatile-write path to scrub key
+        // material, preventing the compiler from optimising away the zeroing.
+        unsafe {
+            core::slice::from_raw_parts_mut(
+                (self as *mut Self).cast::<u8>(),
+                core::mem::size_of::<Self>(),
+            )
+            .zeroize();
+        }
     }
 }
 
