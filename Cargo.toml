@@ -29,7 +29,6 @@ oqs = { version = "*", default-features = false, features = [
   "ml_kem",
   "sphincs",
 ] }
-winternitz = "*"
 aegis = { version = "*", default-features = false }
 
 [dev-dependencies]
