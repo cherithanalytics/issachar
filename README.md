@@ -2,6 +2,16 @@
 
 Post-quantum cryptography primitives for Rust. Every algorithm is fixed at NIST Level 5 (~256-bit classical / 128-bit post-quantum security). There are no level-1 or level-3 variants.
 
+## Motivation
+
+Christian ministries — Bible translation organizations, mission networks, humanitarian relief operations, and underground churches — increasingly operate in environments where state-level adversaries are a realistic threat. Governments that actively persecute religious minorities have both the motive and the capability to surveil encrypted communications, identify local believers, and intercept financial transfers to at-risk workers. The people exposed by a broken encryption scheme are not abstractions; they are pastors, translators, and aid workers in places where discovery carries serious personal cost.
+
+The cryptographic threat compounds over time. **Harvest-now-decrypt-later** attacks are already underway: adversaries record encrypted traffic today with the expectation of decrypting it once a capable quantum computer exists. Communications that seem low-stakes now — the names and locations of house-church leaders, the identities of national partners, the financial trails of restricted-access ministries — can become a liability years or decades later if they were protected only by classical cryptography. For ministries with a multi-generational view of their work, the relevant planning horizon is not five years but fifty.
+
+Most ministries do not have a dedicated security engineering team, and most general-purpose cryptography libraries leave the choice of algorithm and security level to the caller. This crate makes the conservative choice once: every algorithm is fixed at NIST Level 5 and there are no lower-security variants to accidentally select. The goal is a library that ministry-facing applications can depend on without requiring the authors to reason about which security level is "good enough."
+
+The name *Issachar* comes from 1 Chronicles 12:32 — men who understood the times and knew what Israel ought to do.
+
 ## Modules
 
 | Module | Contents |
