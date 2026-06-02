@@ -1,0 +1,43 @@
+[package]
+name = "issachar"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "gen_test_vectors"
+required-features = ["gen-vectors"]
+
+[[bin]]
+name = "gen_sig_test_vectors"
+required-features = ["gen-vectors"]
+
+[dependencies]
+cshake = "*"
+rand_core = { version = "*", features = ["getrandom"] }
+subtle = "*"
+x25519-dalek = { version = "*", features = ["zeroize"] }
+getrandom = "*"
+chacha20poly1305 = { version = "*", default-features = false }
+keccak = "*"
+thiserror = "*"
+zeroize = { version = "*", features = ["derive"] }
+hex = { version = "*", optional = true }
+oqs = { version = "*", default-features = false, features = [
+  "classic_mceliece",
+  "frodokem",
+  "ml_dsa",
+  "ml_kem",
+  "sphincs",
+] }
+winternitz = "*"
+aegis = { version = "*", default-features = false }
+
+[dev-dependencies]
+hex = "*"
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+
+[features]
+default = ["std"]
+std = ["oqs/std"]
+gen-vectors = ["dep:hex"]

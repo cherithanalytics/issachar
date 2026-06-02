@@ -1,0 +1,337 @@
+use issachar::prf::cshake256::{CShake256, DIGEST_LEN};
+
+// ── NIST SP 800-185 Appendix A.2 cSHAKE256 sample vectors ───────────────────
+
+#[test]
+fn nist_cshake256_sample_1() {
+    // M = 0x00010203, N = "", S = "Email Signature", L = 512 bits
+    let mut h = CShake256::digest(b"Email Signature");
+    h.update([0x00u8, 0x01, 0x02, 0x03]);
+    assert_eq!(
+        h.finalize(),
+        [
+            0xd0, 0x08, 0x82, 0x8e, 0x2b, 0x80, 0xac, 0x9d, 0x22, 0x18, 0xff, 0xee, 0x1d, 0x07,
+            0x0c, 0x48, 0xb8, 0xe4, 0xc8, 0x7b, 0xff, 0x32, 0xc9, 0x69, 0x9d, 0x5b, 0x68, 0x96,
+            0xee, 0xe0, 0xed, 0xd1, 0x64, 0x02, 0x0e, 0x2b, 0xe0, 0x56, 0x08, 0x58, 0xd9, 0xc0,
+            0x0c, 0x03, 0x7e, 0x34, 0xa9, 0x69, 0x37, 0xc5, 0x61, 0xa7, 0x4c, 0x41, 0x2b, 0xb4,
+            0xc7, 0x46, 0x46, 0x95, 0x27, 0x28, 0x1c, 0x8c,
+        ]
+    );
+}
+
+#[test]
+fn nist_cshake256_sample_2() {
+    // M = 0x000102...C7 (200 bytes), N = "", S = "Email Signature", L = 512 bits
+    let input: Vec<u8> = (0x00u8..=0xC7u8).collect();
+    let mut h = CShake256::digest(b"Email Signature");
+    h.update(&input);
+    assert_eq!(
+        h.finalize(),
+        [
+            0x07, 0xdc, 0x27, 0xb1, 0x1e, 0x51, 0xfb, 0xac, 0x75, 0xbc, 0x7b, 0x3c, 0x1d, 0x98,
+            0x3e, 0x8b, 0x4b, 0x85, 0xfb, 0x1d, 0xef, 0xaf, 0x21, 0x89, 0x12, 0xac, 0x86, 0x43,
+            0x02, 0x73, 0x09, 0x17, 0x27, 0xf4, 0x2b, 0x17, 0xed, 0x1d, 0xf6, 0x3e, 0x8e, 0xc1,
+            0x18, 0xf0, 0x4b, 0x23, 0x63, 0x3c, 0x1d, 0xfb, 0x15, 0x74, 0xc8, 0xfb, 0x55, 0xcb,
+            0x45, 0xda, 0x8e, 0x25, 0xaf, 0xb0, 0x92, 0xbb,
+        ]
+    );
+}
+
+// ── NIST SP 800-185 Appendix A.4 KMAC256 sample vectors ─────────────────────
+
+// Common key for all KMAC256 samples: 0x404142...7F (64 bytes)
+fn nist_kmac_key() -> Vec<u8> {
+    (0x40u8..=0x7fu8).collect()
+}
+
+// Common message for samples #3–#5: 0x000102...BB (188 bytes)
+fn nist_kmac_message() -> Vec<u8> {
+    (0x00u8..=0xbbu8).collect()
+}
+
+#[test]
+fn nist_kmac256_sample_3() {
+    // S = "My Tagged Application", L = 512 bits
+    let mut h = CShake256::hmac(&nist_kmac_key(), b"My Tagged Application");
+    h.update(&nist_kmac_message());
+    assert_eq!(
+        h.finalize(),
+        [
+            0x0e, 0x80, 0x92, 0x4c, 0xd8, 0x8a, 0x0d, 0x22, 0x23, 0xae, 0x33, 0x82, 0x46, 0xdc,
+            0x8d, 0x1d, 0x6a, 0x50, 0xeb, 0xa9, 0xc0, 0x6f, 0x1e, 0x20, 0x68, 0xea, 0x2b, 0xde,
+            0x68, 0xc7, 0x09, 0xcc, 0x56, 0xeb, 0x14, 0x69, 0x82, 0x99, 0xeb, 0x24, 0x41, 0x7a,
+            0x81, 0x87, 0xf2, 0x16, 0x11, 0xa6, 0x30, 0x85, 0xaf, 0xcb, 0x77, 0xfa, 0xd4, 0x3a,
+            0xa7, 0x56, 0x57, 0x70, 0x1c, 0x30, 0x32, 0x66,
+        ]
+    );
+}
+
+#[test]
+fn nist_kmac256_sample_4() {
+    // S = "" (empty), L = 512 bits
+    let mut h = CShake256::hmac(&nist_kmac_key(), b"");
+    h.update(&nist_kmac_message());
+    assert_eq!(
+        h.finalize(),
+        [
+            0xca, 0xb0, 0x56, 0xef, 0xa9, 0xb4, 0x5e, 0xe3, 0x1c, 0xbc, 0x2a, 0x85, 0x0c, 0xff,
+            0x7a, 0x02, 0x03, 0x88, 0x5d, 0x18, 0xdd, 0xec, 0x09, 0xe3, 0x04, 0x52, 0xea, 0x8a,
+            0xdf, 0x38, 0x77, 0x8f, 0xa1, 0xa3, 0x73, 0xcd, 0xb0, 0x58, 0xe7, 0x42, 0xaf, 0x82,
+            0xff, 0x97, 0xc3, 0x68, 0x20, 0x3b, 0x70, 0xc3, 0x9a, 0x0a, 0x5d, 0x02, 0x06, 0x96,
+            0x61, 0x14, 0x88, 0xaa, 0x73, 0x88, 0x3c, 0x64,
+        ]
+    );
+}
+
+#[test]
+fn nist_kmac256_sample_5() {
+    // S = "My Tagged Application", L = 1024 bits (128 bytes)
+    let mut h = CShake256::hmac(&nist_kmac_key(), b"My Tagged Application");
+    h.update(&nist_kmac_message());
+    assert_eq!(
+        h.finalize_xof::<128>(),
+        [
+            0xb0, 0x5f, 0x64, 0x91, 0x59, 0x68, 0xdb, 0x9c, 0xf8, 0x00, 0x00, 0x01, 0x35, 0xfe,
+            0xb7, 0xc3, 0x18, 0x8b, 0xb9, 0x68, 0xfa, 0x39, 0x53, 0xa9, 0x4e, 0x71, 0xb6, 0xa3,
+            0xc8, 0x53, 0x9f, 0x3e, 0x70, 0x44, 0xf2, 0x23, 0xe8, 0x11, 0xd2, 0x17, 0x7d, 0xe6,
+            0xec, 0x17, 0x09, 0xe8, 0x3f, 0x2d, 0xe3, 0x7a, 0xff, 0x81, 0xdb, 0xbe, 0x33, 0xf2,
+            0x75, 0x91, 0xa1, 0xe5, 0x4f, 0x00, 0xd8, 0x33, 0x75, 0x59, 0x39, 0x6d, 0xe9, 0xa7,
+            0xc8, 0x01, 0x03, 0xad, 0x45, 0x64, 0x65, 0xd5, 0x6f, 0x44, 0x49, 0x0b, 0xd1, 0x9a,
+            0x4f, 0x54, 0xf4, 0xdb, 0x81, 0x8d, 0x1d, 0x1a, 0x5e, 0xb1, 0x9a, 0x5f, 0x74, 0xea,
+            0x3b, 0x19, 0x10, 0x48, 0x0a, 0xe9, 0x78, 0xe5, 0xd2, 0x31, 0x2c, 0x3d, 0x7e, 0xfd,
+            0x79, 0x9b, 0x7e, 0xc0, 0xaa, 0xfc, 0xf4, 0x09, 0x65, 0x20, 0xf2, 0xbf, 0x31, 0x74,
+            0xfc, 0xc8,
+        ]
+    );
+}
+
+// ── cSHAKE256 structural / property tests ────────────────────────────────────
+
+#[test]
+fn empty_n_and_s_degrades_to_shake256() {
+    // When N and S are both empty, cSHAKE256 uses the SHAKE256 padding byte (0x1F)
+    // and produces identical output to plain SHAKE256.
+    let mut h = CShake256::digest(b"");
+    h.update(b"hello world");
+    assert_eq!(
+        h.finalize(),
+        [
+            0x36, 0x97, 0x71, 0xbb, 0x2c, 0xb9, 0xd2, 0xb0, 0x4c, 0x1d, 0x54, 0xcc, 0xa4, 0x87,
+            0xe3, 0x72, 0xd9, 0xf1, 0x87, 0xf7, 0x3f, 0x7b, 0xa3, 0xf6, 0x5b, 0x95, 0xc8, 0xee,
+            0x77, 0x98, 0xc5, 0x27, 0xf4, 0xf3, 0xc2, 0xd5, 0x5c, 0x2d, 0x46, 0xa2, 0x9f, 0x2e,
+            0x94, 0x5d, 0x46, 0x9c, 0x3d, 0xf2, 0x78, 0x53, 0xa8, 0x73, 0x52, 0x71, 0xf5, 0xcc,
+            0x2d, 0x9e, 0x88, 0x95, 0x44, 0x35, 0x71, 0x16,
+        ]
+    );
+}
+
+#[test]
+fn customization_changes_output() {
+    let mut a = CShake256::digest(b"ctx-alpha");
+    let mut b = CShake256::digest(b"ctx-beta");
+    a.update(b"same input");
+    b.update(b"same input");
+    assert_ne!(a.finalize(), b.finalize());
+}
+
+#[test]
+fn streaming_matches_oneshot() {
+    let input = b"streaming input test for cshake256";
+    let expected = {
+        let mut h = CShake256::digest(b"test");
+        h.update(input);
+        h.finalize()
+    };
+    let mut h = CShake256::digest(b"test");
+    for byte in input {
+        h.update([*byte]);
+    }
+    assert_eq!(h.finalize(), expected);
+}
+
+#[test]
+fn reset_restores_state() {
+    let mut h = CShake256::digest(b"ctx");
+    h.update(b"first");
+    let first = h.finalize();
+
+    h.reset();
+    h.update(b"first");
+    assert_eq!(h.finalize(), first);
+}
+
+#[test]
+fn finalize_is_prefix_of_xof() {
+    let mut h = CShake256::digest(b"ctx");
+    h.update(b"xof prefix test");
+    let fixed: [u8; DIGEST_LEN] = h.finalize();
+
+    let mut h2 = CShake256::digest(b"ctx");
+    h2.update(b"xof prefix test");
+    let extended: [u8; 128] = h2.finalize_xof();
+
+    assert_eq!(fixed, extended[..DIGEST_LEN]);
+}
+
+#[test]
+fn xof_is_deterministic() {
+    let input = b"abc";
+    let mut a = CShake256::digest(b"");
+    a.update(input);
+    let out_a: [u8; 128] = a.finalize_xof();
+
+    let mut b = CShake256::digest(b"");
+    b.update(input);
+    let out_b: [u8; 128] = b.finalize_xof();
+
+    let expected: [u8; 128] = [
+        0x48, 0x33, 0x66, 0x60, 0x13, 0x60, 0xa8, 0x77, 0x1c, 0x68, 0x63, 0x08, 0x0c, 0xc4, 0x11,
+        0x4d, 0x8d, 0xb4, 0x45, 0x30, 0xf8, 0xf1, 0xe1, 0xee, 0x4f, 0x94, 0xea, 0x37, 0xe7, 0x8b,
+        0x57, 0x39, 0xd5, 0xa1, 0x5b, 0xef, 0x18, 0x6a, 0x53, 0x86, 0xc7, 0x57, 0x44, 0xc0, 0x52,
+        0x7e, 0x1f, 0xaa, 0x9f, 0x87, 0x26, 0xe4, 0x62, 0xa1, 0x2a, 0x4f, 0xeb, 0x06, 0xbd, 0x88,
+        0x01, 0xe7, 0x51, 0xe4, 0x13, 0x85, 0x14, 0x12, 0x04, 0xf3, 0x29, 0x97, 0x9f, 0xd3, 0x04,
+        0x7a, 0x13, 0xc5, 0x65, 0x77, 0x24, 0xad, 0xa6, 0x4d, 0x24, 0x70, 0x15, 0x7b, 0x3c, 0xdc,
+        0x28, 0x86, 0x20, 0x94, 0x4d, 0x78, 0xdb, 0xcd, 0xdb, 0xd9, 0x12, 0x99, 0x3f, 0x09, 0x13,
+        0xf1, 0x64, 0xfb, 0x2c, 0xe9, 0x51, 0x31, 0xa2, 0xd0, 0x9a, 0x3e, 0x6d, 0x51, 0xcb, 0xfc,
+        0x62, 0x27, 0x20, 0xd7, 0xa7, 0x5c, 0x63, 0x34,
+    ];
+
+    assert_eq!(out_a, out_b);
+    assert_eq!(out_a, expected);
+}
+
+// ── finalize_reader tests ─────────────────────────────────────────────────────
+
+#[test]
+fn reader_matches_finalize_xof_into_for_digest() {
+    let mut h = CShake256::digest(b"reader-test");
+    h.update(b"hello reader");
+    let mut expected = [0u8; 128];
+    h.finalize_xof_into(&mut expected);
+
+    let mut h2 = CShake256::digest(b"reader-test");
+    h2.update(b"hello reader");
+    let mut actual = [0u8; 128];
+    h2.finalize_reader().read(&mut actual);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn reader_chunked_reads_are_consistent() {
+    let mut h = CShake256::digest(b"chunked-reader");
+    h.update(b"chunked test input");
+    let mut reader = h.finalize_reader();
+    let mut combined = [0u8; 128];
+    reader.read(&mut combined[..64]);
+    reader.read(&mut combined[64..]);
+
+    let mut h2 = CShake256::digest(b"chunked-reader");
+    h2.update(b"chunked test input");
+    let mut expected = [0u8; 128];
+    h2.finalize_xof_into(&mut expected);
+    assert_eq!(combined, expected);
+}
+
+#[test]
+fn kmac_reader_differs_from_fixed_finalize() {
+    // KMACXOF (right_encode(0)) is distinct from KMAC (right_encode(L)) for any L > 0.
+    let key = b"kmac-reader-key";
+    let msg = b"kmac reader message";
+
+    let mut h1 = CShake256::hmac(key, b"ctx");
+    h1.update(msg);
+    let mut fixed = [0u8; 64];
+    h1.finalize_xof_into(&mut fixed);
+
+    let mut h2 = CShake256::hmac(key, b"ctx");
+    h2.update(msg);
+    let mut from_reader = [0u8; 64];
+    h2.finalize_reader().read(&mut from_reader);
+
+    assert_ne!(fixed, from_reader);
+}
+
+#[test]
+fn kmac_reader_chunked_reads_are_consistent() {
+    let key = b"kmac-xof-key";
+    let msg = b"kmac xof deterministic test";
+
+    let mut h = CShake256::hmac(key, b"ctx");
+    h.update(msg);
+    let mut reader = h.finalize_reader();
+    let mut chunked = [0u8; 200];
+    reader.read(&mut chunked[..100]);
+    reader.read(&mut chunked[100..]);
+
+    let mut h2 = CShake256::hmac(key, b"ctx");
+    h2.update(msg);
+    let mut single = [0u8; 200];
+    h2.finalize_reader().read(&mut single);
+
+    assert_eq!(chunked, single);
+}
+
+// ── KMAC256 property tests ────────────────────────────────────────────────────
+
+#[test]
+fn kmac_key_changes_output() {
+    let msg = b"same message";
+    let mut a = CShake256::hmac(b"key-one", b"");
+    let mut b = CShake256::hmac(b"key-two", b"");
+    a.update(msg);
+    b.update(msg);
+    assert_ne!(a.finalize(), b.finalize());
+}
+
+#[test]
+fn kmac_customization_changes_output() {
+    let key = b"same key";
+    let msg = b"same message";
+    let mut a = CShake256::hmac(key, b"ctx-a");
+    let mut b = CShake256::hmac(key, b"ctx-b");
+    a.update(msg);
+    b.update(msg);
+    assert_ne!(a.finalize(), b.finalize());
+}
+
+#[test]
+fn kmac_differs_from_digest() {
+    // KMAC absorbs a key block and appends right_encode(L); plain digest does neither.
+    let key = b"k";
+    let msg = b"m";
+    let mut mac = CShake256::hmac(key, b"");
+    mac.update(msg);
+
+    let mut plain = CShake256::digest(b"");
+    plain.update(msg);
+
+    assert_ne!(mac.finalize(), plain.finalize());
+}
+
+#[test]
+fn kmac_streaming_matches_oneshot() {
+    let key = b"streaming-key";
+    let input = b"streaming message for kmac256";
+    let expected = {
+        let mut h = CShake256::hmac(key, b"ctx");
+        h.update(input);
+        h.finalize()
+    };
+    let mut h = CShake256::hmac(key, b"ctx");
+    for byte in input {
+        h.update([*byte]);
+    }
+    assert_eq!(h.finalize(), expected);
+}
+
+#[test]
+fn kmac_reset_restores_state() {
+    let key = b"reset-key";
+    let mut h = CShake256::hmac(key, b"ctx");
+    h.update(b"first message");
+    let first = h.finalize();
+
+    h.reset();
+    h.update(b"first message");
+    assert_eq!(h.finalize(), first);
+}

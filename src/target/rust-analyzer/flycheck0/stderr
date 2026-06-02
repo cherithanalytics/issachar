@@ -1,0 +1,263 @@
+   0.042176375s  INFO prepare_target{force=false package_id=pqc v0.1.0 (/Users/b/code/pqc) target="pqc"}: cargo::core::compiler::fingerprint: fingerprint error for pqc v0.1.0 (/Users/b/code/pqc)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("pqc", ["lib"], "/Users/b/code/pqc/src/lib.rs", Edition2024) }
+   0.042192083s  INFO prepare_target{force=false package_id=pqc v0.1.0 (/Users/b/code/pqc) target="pqc"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/pqc-befeed53911129ee/lib-pqc`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   7: cargo::ops::cargo_compile::compile_ws
+   8: cargo::ops::cargo_compile::compile_with_exec
+   9: cargo::ops::cargo_compile::compile
+  10: cargo::commands::check::exec
+  11: <cargo::cli::Exec>::exec
+  12: cargo::main
+  13: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  14: std::rt::lang_start::<()>::{closure#0}
+  15: std::rt::lang_start_internal
+  16: _main
+   0.044487833s  INFO prepare_target{force=false package_id=oqs v0.11.0 target="oqs"}: cargo::core::compiler::fingerprint: fingerprint error for oqs v0.11.0/Check { test: false }/TargetInner { ..: lib_target("oqs", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/oqs-0.11.0/src/lib.rs", Edition2021) }
+   0.044494542s  INFO prepare_target{force=false package_id=oqs v0.11.0 target="oqs"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/oqs-8b4ed9933a960694/lib-oqs`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+   0.044695667s  INFO prepare_target{force=false package_id=cstr_core v0.2.6 target="cstr_core"}: cargo::core::compiler::fingerprint: fingerprint error for cstr_core v0.2.6/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("cstr_core", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cstr_core-0.2.6/src/lib.rs", Edition2018) }
+   0.044699542s  INFO prepare_target{force=false package_id=cstr_core v0.2.6 target="cstr_core"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/cstr_core-304d57e64b416a9d/lib-cstr_core`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   9: cargo::ops::cargo_compile::compile_ws
+  10: cargo::ops::cargo_compile::compile_with_exec
+  11: cargo::ops::cargo_compile::compile
+  12: cargo::commands::check::exec
+  13: <cargo::cli::Exec>::exec
+  14: cargo::main
+  15: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  16: std::rt::lang_start::<()>::{closure#0}
+  17: std::rt::lang_start_internal
+  18: _main
+   0.044836750s  INFO prepare_target{force=false package_id=cty v0.2.2 target="cty"}: cargo::core::compiler::fingerprint: fingerprint error for cty v0.2.2/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("cty", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cty-0.2.2/src/lib.rs", Edition2015) }
+   0.044839875s  INFO prepare_target{force=false package_id=cty v0.2.2 target="cty"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/cty-d0723439370bd031/lib-cty`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: cargo::core::compiler::compile
+   9: <cargo::core::compiler::build_runner::BuildRunner>::compile
+  10: cargo::ops::cargo_compile::compile_ws
+  11: cargo::ops::cargo_compile::compile_with_exec
+  12: cargo::ops::cargo_compile::compile
+  13: cargo::commands::check::exec
+  14: <cargo::cli::Exec>::exec
+  15: cargo::main
+  16: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  17: std::rt::lang_start::<()>::{closure#0}
+  18: std::rt::lang_start_internal
+  19: _main
+   0.044946833s  INFO prepare_target{force=false package_id=memchr v2.8.0 target="memchr"}: cargo::core::compiler::fingerprint: fingerprint error for memchr v2.8.0/Check { test: false }/TargetInner { benched: false, ..: lib_target("memchr", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/memchr-2.8.0/src/lib.rs", Edition2021) }
+   0.044949625s  INFO prepare_target{force=false package_id=memchr v2.8.0 target="memchr"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/memchr-954ef8db1c93d7be/lib-memchr`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: cargo::core::compiler::compile
+   9: <cargo::core::compiler::build_runner::BuildRunner>::compile
+  10: cargo::ops::cargo_compile::compile_ws
+  11: cargo::ops::cargo_compile::compile_with_exec
+  12: cargo::ops::cargo_compile::compile
+  13: cargo::commands::check::exec
+  14: <cargo::cli::Exec>::exec
+  15: cargo::main
+  16: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  17: std::rt::lang_start::<()>::{closure#0}
+  18: std::rt::lang_start_internal
+  19: _main
+   0.045054625s  INFO prepare_target{force=false package_id=libc v0.2.184 target="libc"}: cargo::core::compiler::fingerprint: fingerprint error for libc v0.2.184/Check { test: false }/TargetInner { ..: lib_target("libc", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.184/src/lib.rs", Edition2021) }
+   0.045057500s  INFO prepare_target{force=false package_id=libc v0.2.184 target="libc"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/libc-1b828e19bc421f20/lib-libc`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   9: cargo::ops::cargo_compile::compile_ws
+  10: cargo::ops::cargo_compile::compile_with_exec
+  11: cargo::ops::cargo_compile::compile
+  12: cargo::commands::check::exec
+  13: <cargo::cli::Exec>::exec
+  14: cargo::main
+  15: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  16: std::rt::lang_start::<()>::{closure#0}
+  17: std::rt::lang_start_internal
+  18: _main
+   0.050034875s  INFO prepare_target{force=false package_id=oqs-sys v0.11.0+liboqs-0.13.0 target="oqs_sys"}: cargo::core::compiler::fingerprint: fingerprint error for oqs-sys v0.11.0+liboqs-0.13.0/Check { test: false }/TargetInner { ..: lib_target("oqs_sys", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/oqs-sys-0.11.0+liboqs-0.13.0/src/lib.rs", Edition2021) }
+   0.050040375s  INFO prepare_target{force=false package_id=oqs-sys v0.11.0+liboqs-0.13.0 target="oqs_sys"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/oqs-sys-f660440608c371ef/lib-oqs_sys`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   9: cargo::ops::cargo_compile::compile_ws
+  10: cargo::ops::cargo_compile::compile_with_exec
+  11: cargo::ops::cargo_compile::compile
+  12: cargo::commands::check::exec
+  13: <cargo::cli::Exec>::exec
+  14: cargo::main
+  15: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  16: std::rt::lang_start::<()>::{closure#0}
+  17: std::rt::lang_start_internal
+  18: _main
+   0.050248875s  INFO prepare_target{force=false package_id=pqc v0.1.0 (/Users/b/code/pqc) target="pqc"}: cargo::core::compiler::fingerprint: fingerprint error for pqc v0.1.0 (/Users/b/code/pqc)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("pqc", ["lib"], "/Users/b/code/pqc/src/lib.rs", Edition2024) }
+   0.050252083s  INFO prepare_target{force=false package_id=pqc v0.1.0 (/Users/b/code/pqc) target="pqc"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/pqc-d8b57cea61de5332/test-lib-pqc`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   7: cargo::ops::cargo_compile::compile_ws
+   8: cargo::ops::cargo_compile::compile_with_exec
+   9: cargo::ops::cargo_compile::compile
+  10: cargo::commands::check::exec
+  11: <cargo::cli::Exec>::exec
+  12: cargo::main
+  13: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  14: std::rt::lang_start::<()>::{closure#0}
+  15: std::rt::lang_start_internal
+  16: _main
+   0.050406958s  INFO prepare_target{force=false package_id=hex v0.4.3 target="hex"}: cargo::core::compiler::fingerprint: fingerprint error for hex v0.4.3/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("hex", ["lib"], "/Users/b/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hex-0.4.3/src/lib.rs", Edition2018) }
+   0.050409792s  INFO prepare_target{force=false package_id=hex v0.4.3 target="hex"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/hex-0125b584b266aeec/lib-hex`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+   0.050535292s  INFO prepare_target{force=false package_id=pqc v0.1.0 (/Users/b/code/pqc) target="vectors"}: cargo::core::compiler::fingerprint: fingerprint error for pqc v0.1.0 (/Users/b/code/pqc)/Check { test: true }/TargetInner { kind: "test", name: "vectors", benched: false, ..: with_path("/Users/b/code/pqc/tests/vectors.rs", Edition2024) }
+   0.050538750s  INFO prepare_target{force=false package_id=pqc v0.1.0 (/Users/b/code/pqc) target="vectors"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/b/code/pqc/target/debug/.fingerprint/pqc-c68c2c14f3d26344/test-integration-test-vectors`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   7: cargo::ops::cargo_compile::compile_ws
+   8: cargo::ops::cargo_compile::compile_with_exec
+   9: cargo::ops::cargo_compile::compile
+  10: cargo::commands::check::exec
+  11: <cargo::cli::Exec>::exec
+  12: cargo::main
+  13: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  14: std::rt::lang_start::<()>::{closure#0}
+  15: std::rt::lang_start_internal
+  16: _main
+    Checking cty v0.2.2
+    Checking memchr v2.8.0
+    Checking hex v0.4.3
+    Checking libc v0.2.184
+    Checking cstr_core v0.2.6
+    Checking oqs-sys v0.11.0+liboqs-0.13.0
+    Checking oqs v0.11.0
+    Checking pqc v0.1.0 (/Users/b/code/pqc)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.34s
