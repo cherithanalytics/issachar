@@ -2,6 +2,18 @@
 
 Post-quantum cryptography primitives for Rust. Every algorithm is fixed at NIST Level 5 (~256-bit classical / 128-bit post-quantum security). There are no level-1 or level-3 variants.
 
+## Who is this for?
+
+This library is a good fit if your application meets most of these criteria:
+
+- **Post-quantum urgency.** You believe cryptographically-relevant quantum computers are coming within your security horizon. Or, you are unwilling to bet they are not. This library is built on the premise that harvest-now-decrypt-later attacks are already underway and that the window for migrating to post-quantum cryptography is shorter than most organizations assume.
+- **State-level adversaries.** Your threat model includes nation-states or other well-funded actors with a quantum computer and the capability to record today and decrypt later.
+- **Long-lived secrets.** The data you are protecting must remain confidential for decades.
+- **Non-embedded targets.** You are deploying to mobile devices, desktops, or servers. Classic McEliece's ~1.3 MB public key and the general key sizes of Level 5 algorithms are not suitable for microcontrollers or severely memory-constrained environments.
+- **Performance is not paramount.** Level 5 algorithms are larger and slower than their Level 3 counterparts. If throughput or battery life is the dominant concern, this library is not the right choice.
+
+If you are building general-purpose infrastructure without a specific long-lived-secret threat model, Level 3 algorithms from a library like [RustCrypto](https://github.com/RustCrypto) are likely a better fit.
+
 ## Motivation
 
 The name *Issachar* comes from 1 Chronicles 12:32 — men who understood the times and knew what Israel ought to do.
