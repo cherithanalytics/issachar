@@ -124,6 +124,11 @@ For streaming large payloads, split into fixed-size chunks and derive a per-chun
 
 Authenticated key exchange over the [Strobe](https://strobe.sourceforge.io/) duplex sponge, producing a stateful `Transport` with auto-incrementing nonces. Call `.into_stateless()` for a `Sync`-able version where the caller supplies nonces.
 
+The pattern names come from the [Noise Protocol Framework](https://noiseprotocol.org/):
+
+- **NK** — the server has a **K**nown static key; the client is a**N**onymous. The client authenticates the server but the server does not authenticate the client. Analogous to a standard TLS handshake where only the server presents a certificate.
+- **KK** — **b**oth parties have **K**nown static keys. Both sides authenticate each other before any data flows. Suitable for machine-to-machine channels where both endpoints are pre-registered.
+
 **NK (server has a known static key):**
 
 ```rust
