@@ -24,9 +24,9 @@ RSA and elliptic-curve cryptography have accumulated decades of public cryptanal
 - ML-KEM and ML-DSA were standardized in 2024 and have roughly ten years of serious public scrutiny behind them.
 - SPHINCS+ is similarly old, yet built upon decades of research into pseudorandom functions and the random oracle model. 
 - FrodoKEM is similarly old, yet built on the more conservative unstructured LWE Problem (as opposed to ML-KEM).
-- Classic McEliece has resisted attack for over fifty years and whose security reduction is tight and well-understood.
+- Classic McEliece has resisted attack for over 50 years; its security reduction is tight and well-understood.
 
-We recognize this library is not for everyone: It is extremely conservative at the expense of performance. The extra security margin of Level 5 over Level 3 is a direct hedge against cryptanalytic advances that have not happened yet but cannot be ruled out over a fifty-year planning horizon. 
+The extra security margin of Level 5 over Level 3 is a direct hedge against cryptanalytic advances that have not happened yet but cannot be ruled out over a 30 planning horizon. 
 
 ## Modules
 
@@ -180,7 +180,7 @@ The name *Issachar* comes from 1 Chronicles 12:32 — men who understood the tim
 
 Christian ministries (Bible translation organizations, mission networks, humanitarian relief operations, and underground churches) increasingly operate in environments where state-level adversaries are a realistic threat. Governments that actively persecute religious minorities have both the motive and the capability to surveil encrypted communications, identify local believers, and intercept financial transfers to at-risk workers. The people exposed by a broken encryption scheme are not abstractions; they are pastors, translators, and aid workers in places where discovery carries serious personal cost.
 
-**Harvest-now-decrypt-later** attacks are already underway. Adversaries record encrypted traffic today with the expectation of decrypting it once a capable quantum computer exists. Communications that seem low-stakes now can become a liability later if they were protected only by classical cryptography. For ministries with a multi-generational view of their work, the relevant planning horizon is not five years but fifty.
+**Harvest-now-decrypt-later** attacks are already underway. Adversaries record encrypted traffic today with the expectation of decrypting it once a capable quantum computer exists. Communications that seem low-stakes now can become a liability later if they were protected only by classical cryptography. For ministries with a multi-generational view of their work, the relevant planning horizon is not 3 years but 30.
 
 Most ministries do not have a dedicated security engineering team. Most general-purpose cryptography libraries leave the choice of algorithm and security level to the caller. This crate makes the conservative choice once: Every algorithm is fixed at NIST Level 5. The goal is a library that ministry-facing applications can depend on without requiring the authors to reason about which security level is "good enough."
 

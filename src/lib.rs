@@ -110,74 +110,35 @@
 //! The two signatures are independent and each already commits to the full
 //! message, so no additional hashing of the signatures together is required.
 //!
-//! # Grover's algorithm, BHT algorithm: Key lengths and Hash lengths have to change
+//! # Symmetric keys and hash output lengths
 //!
-//! The algorithms in this crate protect key establishment and authentication.
-//! Once a shared secret is established, data is typically encrypted with a
-//! symmetric cipher such as AES or ChaCha20. Symmetric encryption faces a
-//! *different* quantum threat: **Grover's algorithm**.
+//! Once a shared secret is established, data is typically encrypted with a symmetric
+//! cipher. Symmetric primitives face a different and considerably weaker quantum threat
+//! than asymmetric ones.
 //!
-//! Grover's algorithm can search an unstructured space of N possibilities in
-//! √N steps rather than N, giving a quantum attacker a quadratic — not
-//! exponential — speedup against symmetric keys. The practical consequence is
-//! that a quantum computer effectively **halves the bit-security of a symmetric
-//! key**:
+//! **Shor's algorithm** — the reason this crate exists — breaks RSA and elliptic-curve
+//! cryptography in polynomial time. It requires a large, fully fault-tolerant quantum
+//! computer, but when that machine exists, classical asymmetric cryptography is broken
+//! completely.
 //!
-//! > **This is extremely paranoid.** Unlike classical brute force, which
-//! > parallelises perfectly (k processors reduce work by exactly k), Grover's
-//! > amplitude amplification is inherently sequential — each step depends on the
-//! > previous one. Running k independent quantum processors in parallel yields
-//! > only a √k speedup rather than k, so reducing 2^128 Grover steps to a
-//! > feasible timeline would require ~2^128 quantum processors working in
-//! > concert — physically impossible. Beyond parallelism, each Grover oracle
-//! > call on AES-256 requires thousands of logical qubits and millions of
-//! > physical qubits (due to error-correction overhead); no near-term or
-//! > medium-term quantum computer approaches this scale.
+//! **Grover's algorithm** gives a quadratic speedup for unstructured search, effectively
+//! halving the bit-security of a symmetric key. AES-128 drops to ~64-bit security;
+//! AES-256 drops to ~128 bits, which remains adequate. The **BHT algorithm** extends
+//! Grover's to find hash collisions in O(2^(n/3)) time rather than O(2^(n/2)), making
+//! 256-bit hashes marginal for collision resistance (~85-bit quantum security) while
+//! 512-bit outputs remain comfortable.
 //!
-//! Hash functions face an additional, sharper threat beyond Grover's. The
-//! **Brassard-Høyer-Tapp (BHT)** algorithm combines Grover's search with a
-//! quantum walk to find collisions in O(2^(n/3)) time rather than the classical
-//! O(2^(n/2)) birthday bound. This cuts collision resistance to one-third of
-//! the output width rather than one-half, which is why the hash rows above show
-//! ~85-bit quantum security for 256-bit hashes (256 / 3 ≈ 85) rather than the
-//! 128 bits that Grover's alone would predict. Preimage resistance is still
-//! governed by Grover's (2^(n/2)), so 256-bit hashes retain ~128-bit preimage
-//! security — it is collision resistance specifically that takes the harder hit.
+//! Both Grover's and BHT are far harder to realize in practice than Shor's. Grover's
+//! amplitude amplification is inherently sequential and does not parallelise efficiently;
+//! BHT additionally requires quantum random-access memory (QRAM), an unsolved engineering
+//! problem. A practical machine running Shor's algorithm will exist long before one
+//! capable of meaningfully accelerating Grover's or BHT against 256-bit keys.
 //!
-//! > **BHT is even more paranoid than Grover's.** The O(2^(n/3)) bound assumes
-//! > quantum random-access memory (QRAM) that can store and retrieve 2^(n/3)
-//! > quantum states in O(1) time. For a 256-bit hash that is ~2^85 memory
-//! > cells — more addressable storage than any physical system could provide.
-//! > QRAM itself remains an unsolved engineering problem; all current proposals
-//! > require O(n) physical components per logical address, making the full BHT
-//! > attack purely theoretical at these output sizes.
-//!
-//! | Cipher / hash   | Classical security | Quantum security  | Verdict        |
-//! |-----------------|--------------------|-------------------|----------------|
-//! | AES-128         | 128 bits           | ~64 bits          | ✗ Insufficient |
-//! | AES-256         | 256 bits           | ~128 bits         | ✓ Adequate     |
-//! | ChaCha20        | 256 bits           | ~128 bits         | ✓ Adequate     |
-//! | HMAC-SHA-256    | 256 bits           | ~128 bits         | ✓ Adequate     |
-//! | SHA-256 (hash)  | 128-bit collision  | ~85-bit collision | ~ Marginal     |
-//! | BLAKE3 (hash)   | 128-bit collision  | ~85-bit collision | ~ Marginal     |
-//! | SHA-512 (hash)  | 256-bit collision  | ~128-bit collision| ✓ Adequate     |
-//! | SHAKE256 (512b) | 256-bit collision  | ~128-bit collision| ✓ Adequate     |
-//!
-//! The mitigation is straightforward: **use 256-bit symmetric keys and 256-bit security level
-//! digests.**
+//! The mitigation is straightforward: **use 256-bit symmetric keys and 512-bit hash
+//! output** (e.g. SHAKE256 with 64-byte output, as this crate's [`prf`] module does).
 //!
 //! The all-level-5 algorithms in this crate are sized to pair with 256-bit
 //! symmetric ciphers. The shared secrets produced by [`kem`] are 32 bytes.
-//!
-//! # Post-quantum pseudorandom functions
-//!
-//! The classical `crypto_prf` crate uses BLAKE3, which provides only ~128 bits of
-//! post-quantum preimage resistance due to Grover's algorithm halving the effective
-//! security level of any n-bit hash. [`prf`] uses SHAKE256 with 512-bit (64-byte)
-//! output, retaining ~256 bits of post-quantum preimage resistance and matching the
-//! security level of the KEMs and signature schemes in this crate. Prefer [`prf`]
-//! over `crypto_prf` wherever outputs will be used as keys, shared secrets, or
-//! commitments that must remain secure against a future quantum-capable adversary.
 //!
 
 #![no_std]
