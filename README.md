@@ -6,23 +6,13 @@ Post-quantum cryptography primitives for Rust. Every algorithm is fixed at NIST 
 
 This library is a good fit if your application meets most of these criteria:
 
-- **Post-quantum urgency.** You believe cryptographically-relevant quantum computers are coming within your security horizon. Or, you are unwilling to bet they are not. This library is built on the premise that harvest-now-decrypt-later attacks are already underway and that the window for migrating to post-quantum cryptography is shorter than most organizations assume.
+- **Post-quantum urgency.** You believe cryptographically-relevant quantum computers are likely enough that it merits mitigation as a risk.
 - **State-level adversaries.** Your threat model includes nation-states or other well-funded actors with a quantum computer and the capability to record today and decrypt later.
 - **Long-lived secrets.** The data you are protecting must remain confidential for decades.
 - **Non-embedded targets.** You are deploying to mobile devices, desktops, or servers. Classic McEliece's ~1.3 MB public key and the general key sizes of Level 5 algorithms are not suitable for microcontrollers or severely memory-constrained environments.
-- **Performance is not paramount.** Level 5 algorithms are larger and slower than their Level 3 counterparts. If throughput or battery life is the dominant concern, this library is not the right choice.
+- **Performance is not paramount.** Level 5 algorithms are larger and slower than their Level 3 counterparts. If throughput is the dominant concern, this library is not the right choice.
 
 If you are building general-purpose infrastructure without a specific long-lived-secret threat model, Level 3 algorithms from a library like [RustCrypto](https://github.com/RustCrypto) are likely a better fit.
-
-## Motivation
-
-The name *Issachar* comes from 1 Chronicles 12:32 — men who understood the times and knew what Israel ought to do.
-
-Christian ministries (Bible translation organizations, mission networks, humanitarian relief operations, and underground churches) increasingly operate in environments where state-level adversaries are a realistic threat. Governments that actively persecute religious minorities have both the motive and the capability to surveil encrypted communications, identify local believers, and intercept financial transfers to at-risk workers. The people exposed by a broken encryption scheme are not abstractions; they are pastors, translators, and aid workers in places where discovery carries serious personal cost.
-
-**Harvest-now-decrypt-later** attacks are already underway. Adversaries record encrypted traffic today with the expectation of decrypting it once a capable quantum computer exists. Communications that seem low-stakes now can become a liability later if they were protected only by classical cryptography. For ministries with a multi-generational view of their work, the relevant planning horizon is not five years but fifty.
-
-Most ministries do not have a dedicated security engineering team. Most general-purpose cryptography libraries leave the choice of algorithm and security level to the caller. This crate makes the conservative choice once: Every algorithm is fixed at NIST Level 5. The goal is a library that ministry-facing applications can depend on without requiring the authors to reason about which security level is "good enough."
 
 ### Why Level 5?
 
@@ -173,10 +163,6 @@ Use ML-KEM for ephemeral keys. Use Classic McEliece as a static server key when 
 
 The crate is `#![no_std]` and links `alloc` for the heap-allocated key types from the underlying `oqs` bindings. The one `std`-gated API is `prf::cshake256::CShake256::update_read`, which takes a `BufReader`.
 
-## Disclaimer
-
-This library has not undergone a formal security audit. It is provided as-is, without warranty of any kind. Do not deploy it in production systems without independent review by qualified cryptographers.
-
 ## Building
 
 ```sh
@@ -187,3 +173,18 @@ cargo test
 cargo run --bin gen_test_vectors --features gen-vectors
 cargo run --bin gen_sig_test_vectors --features gen-vectors
 ```
+
+## Motivation
+
+The name *Issachar* comes from 1 Chronicles 12:32 — men who understood the times and knew what Israel ought to do.
+
+Christian ministries (Bible translation organizations, mission networks, humanitarian relief operations, and underground churches) increasingly operate in environments where state-level adversaries are a realistic threat. Governments that actively persecute religious minorities have both the motive and the capability to surveil encrypted communications, identify local believers, and intercept financial transfers to at-risk workers. The people exposed by a broken encryption scheme are not abstractions; they are pastors, translators, and aid workers in places where discovery carries serious personal cost.
+
+**Harvest-now-decrypt-later** attacks are already underway. Adversaries record encrypted traffic today with the expectation of decrypting it once a capable quantum computer exists. Communications that seem low-stakes now can become a liability later if they were protected only by classical cryptography. For ministries with a multi-generational view of their work, the relevant planning horizon is not five years but fifty.
+
+Most ministries do not have a dedicated security engineering team. Most general-purpose cryptography libraries leave the choice of algorithm and security level to the caller. This crate makes the conservative choice once: Every algorithm is fixed at NIST Level 5. The goal is a library that ministry-facing applications can depend on without requiring the authors to reason about which security level is "good enough."
+
+## Disclaimer
+
+This library has not undergone a formal security audit. It is provided as-is, without warranty of any kind. Do not deploy it in production systems without independent review by qualified cryptographers.
+
