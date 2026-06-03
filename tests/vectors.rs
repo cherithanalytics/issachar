@@ -25,7 +25,6 @@
 use hex::decode as from_hex;
 use issachar::classic::X25519Key;
 use issachar::kem::{ClassicMcEliece, FrodoKem, MlKem};
-use issachar::ots::winternitz;
 use issachar::sig::{MlDsa, Sphincs};
 
 const SEED: [u8; 64] = [0x42; 64];
@@ -98,22 +97,6 @@ fn classic_mceliece_8192128f_decapsulate_matches_known_shared_secret() {
 
     let ss = ClassicMcEliece::decapsulate(&sk, &ct).unwrap();
     assert_eq!(ss.as_ref(), expected.as_slice());
-}
-
-// ── Winternitz OTS ───────────────────────────────────────────────────────────
-
-#[test]
-fn winternitz_sign_then_verify_roundtrip() {
-    let (pk, sk) = winternitz::keypair().unwrap();
-    let sig = winternitz::sign(MESSAGE, &sk).unwrap();
-    winternitz::verify(MESSAGE, &sig, &pk).unwrap();
-}
-
-#[test]
-fn winternitz_verify_rejects_wrong_message() {
-    let (pk, sk) = winternitz::keypair().unwrap();
-    let sig = winternitz::sign(MESSAGE, &sk).unwrap();
-    assert!(winternitz::verify(b"wrong message", &sig, &pk).is_err());
 }
 
 // ── ML-DSA-87 ─────────────────────────────────────────────────────────────────

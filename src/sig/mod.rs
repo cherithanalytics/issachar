@@ -16,8 +16,6 @@
 //! | Verification      | Fast                         | Fast                              |
 //! | NIST standard     | FIPS 204                     | FIPS 205 (as SLH-DSA)             |
 //!
-//! For one-time-only signing needs, see [`crate::ots`].
-//!
 //! ## Use [`MlDsa`] when:
 //!
 //! - Signature size and signing speed matter — ML-DSA produces compact

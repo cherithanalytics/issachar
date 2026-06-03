@@ -32,7 +32,6 @@ We recognize this library is not for everyone: It is extremely conservative at t
 |--------|----------|
 | `kem` | ML-KEM-1024, Classic McEliece-8192128f, FrodoKEM-1344-AES |
 | `sig` | ML-DSA-87, SPHINCS+-SHA2-256f |
-| `ots` | Winternitz one-time signatures |
 | `prf` | cSHAKE256 / KMAC256 PRF suite |
 | `strobe` | Strobe-based authenticated transports (NK and KK patterns) |
 | `symmetric` | AEGIS-256X2 and ChaCha20-Poly1305 ciphers |
@@ -71,17 +70,6 @@ use issachar::sig::{MlDsa, Sphincs};
 let (pk, sk) = MlDsa::keypair();
 let sig = MlDsa::sign(&sk, b"message");
 assert!(MlDsa::verify(&pk, b"message", &sig).is_ok());
-```
-
-### One-time signatures
-
-```rust
-use issachar::ots::winternitz;
-
-// Each key pair signs at most one message — signing twice leaks the secret key.
-let (pk, sk) = winternitz::keypair();
-let sig = winternitz::sign(&sk, b"message");
-assert!(winternitz::verify(&pk, b"message", &sig).is_ok());
 ```
 
 ### PRF
@@ -153,7 +141,6 @@ The `pqc` variant (`transport_nk::pqc`) replaces the X25519 ephemeral with ML-KE
 
 ## Key invariants
 
-- **Winternitz OTS**: each key pair signs **at most one message**. Signing twice leaks the secret key.
 - **Hybrid KEMs**: always KDF the combined classical + PQ shared secrets together — never use either directly or simply concatenate them as a key.
 - **Zeroize everywhere**: all secret types implement `ZeroizeOnDrop`.
 

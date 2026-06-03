@@ -4,7 +4,6 @@
 //!
 //! - [`kem`] — Key Encapsulation Mechanisms: [`kem::MlKem`], [`kem::ClassicMcEliece`]
 //! - [`sig`] — Digital Signatures: [`sig::MlDsa`], [`sig::Sphincs`]
-//! - [`ots`] — One-Time Signatures: [`ots::Winternitz`]
 //! - [`prf`] — cSHAKE256-based pseudorandom functions: [`prf::digest`], [`prf::hmac`], [`prf::kdf`]
 //!
 //! All algorithms are fixed at their highest security level (NIST Level 5, ~256-bit
@@ -170,21 +169,6 @@
 //! The all-level-5 algorithms in this crate are sized to pair with 256-bit
 //! symmetric ciphers. The shared secrets produced by [`kem`] are 32 bytes.
 //!
-//! # ⚠ One-time signatures
-//!
-//! [`ots`] schemes are **not interchangeable with [`sig`] schemes.** Each key pair may
-//! only ever sign a single message. Signing a second message with the same secret key
-//! leaks enough material for an attacker to forge arbitrary signatures under that key.
-//! Only use [`ots`] when your application can architecturally guarantee that each key
-//! pair is used exactly once — for example, when public keys are embedded in a
-//! forward-only log or a Merkle tree. For all other use cases, prefer [`sig`].
-//!
-//! When that constraint *can* be enforced, the payoff is speed: [`ots::Winternitz`]
-//! signing and verification reduce to sequences of SHA-256 hash-chain evaluations with
-//! no lattice arithmetic or tree traversal, making it the fastest signing scheme in
-//! this crate — noticeably faster than [`sig::MlDsa`] and far faster than
-//! [`sig::Sphincs`].
-//!
 //! # Post-quantum pseudorandom functions
 //!
 //! The classical `crypto_prf` crate uses BLAKE3, which provides only ~128 bits of
@@ -203,7 +187,6 @@ extern crate std;
 
 pub mod classic;
 pub mod kem;
-pub mod ots;
 pub mod prf;
 pub mod sig;
 pub mod strobe;
