@@ -89,12 +89,7 @@ impl AegisCipher {
     /// at least `ciphertext.len() - TAG_LEN` bytes long.
     ///
     /// On tag failure, `plaintext` is zeroed before returning `Err`.
-    pub fn decrypt(
-        self,
-        aad: &[u8],
-        ciphertext: &[u8],
-        plaintext: &mut [u8],
-    ) -> Result<(), Error> {
+    pub fn decrypt(self, aad: &[u8], ciphertext: &[u8], plaintext: &mut [u8]) -> Result<(), Error> {
         if ciphertext.len() < TAG_LEN {
             return Err(Error::TooShort);
         }
@@ -147,3 +142,7 @@ impl core::fmt::Display for Error {
         }
     }
 }
+
+// FIXME: Currently issuing a pull request to `rust-aegis` so that we can call the incremental
+// `libaegis` API to support streams and plain/ciphertexts we don't want to have to fit all in
+// memory at once.

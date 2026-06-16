@@ -30,6 +30,7 @@ oqs = { version = "*", default-features = false, features = [
   "sphincs",
 ] }
 aegis = { version = "*", default-features = false }
+argon2 = { version = "*", default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
 hex = "*"

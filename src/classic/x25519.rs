@@ -1,5 +1,3 @@
-use rand_core::OsRng;
-
 /// An ephemeral X25519 key pair for use in a single handshake.
 ///
 /// Generate one with [`X25519Key::generate`], read the public key with
@@ -13,7 +11,7 @@ pub struct X25519Key {
 
 impl X25519Key {
     pub fn generate() -> Self {
-        let secret = x25519_dalek::EphemeralSecret::random_from_rng(OsRng);
+        let secret = x25519_dalek::EphemeralSecret::random_from_rng(crate::Rng);
         let public = x25519_dalek::PublicKey::from(&secret);
         Self { secret, public }
     }

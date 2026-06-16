@@ -148,6 +148,7 @@ extern crate std;
 
 pub mod classic;
 pub mod kem;
+pub mod pbkdf;
 pub mod prf;
 pub mod sig;
 pub mod strobe;
@@ -162,3 +163,30 @@ use subtle::ConstantTimeEq;
 pub fn timing_safe_eq<const N: usize>(a: &[u8; N], b: &[u8; N]) -> bool {
     a.as_ref().ct_eq(b.as_ref()).into()
 }
+
+/// Fill `buf` with cryptographically secure random bytes from the OS.
+pub fn fill_rand(buf: &mut [u8]) {
+    use rand_core::{OsRng, RngCore};
+    OsRng.fill_bytes(buf);
+}
+
+/// An `RngCore + CryptoRng` adapter that delegates all randomness to [`fill_rand`].
+pub(crate) struct Rng;
+
+impl rand_core::RngCore for Rng {
+    fn next_u32(&mut self) -> u32 {
+        rand_core::impls::next_u32_via_fill(self)
+    }
+    fn next_u64(&mut self) -> u64 {
+        rand_core::impls::next_u64_via_fill(self)
+    }
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        fill_rand(dest);
+    }
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+        fill_rand(dest);
+        Ok(())
+    }
+}
+
+impl rand_core::CryptoRng for Rng {}
