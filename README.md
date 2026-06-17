@@ -2,7 +2,7 @@
 
 Post-quantum cryptography primitives for Rust. Every algorithm is fixed at NIST Level 5 (~256-bit classical / 128-bit post-quantum security). There are no level-1 or level-3 variants.
 
-**[Documentation](https://www.cherithanalytics.com/docs/issachar)**
+**[Documentation](https://www.cherithanalytics.com/docs/issachar/index.html)**
 
 ## Who is this for?
 
