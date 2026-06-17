@@ -61,7 +61,7 @@
 //! // Verifier reconstructs the same digest and calls MlDsa::verify.
 //! ```
 //!
-//! The `customization` string passed to [`CShake256::digest`] acts as a
+//! The `customization` string passed to [`crate::prf::cshake256::CShake256::digest`] acts as a
 //! domain-separation label: two calls with different strings produce completely
 //! independent output spaces even with identical message content, so the same
 //! key pair can safely serve multiple protocols without cross-context confusion.

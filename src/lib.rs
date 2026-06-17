@@ -4,7 +4,7 @@
 //!
 //! - [`kem`] — Key Encapsulation Mechanisms: [`kem::MlKem`], [`kem::ClassicMcEliece`]
 //! - [`sig`] — Digital Signatures: [`sig::MlDsa`], [`sig::Sphincs`]
-//! - [`prf`] — cSHAKE256-based pseudorandom functions: [`prf::digest`], [`prf::hmac`], [`prf::kdf`]
+//! - [`prf`] — cSHAKE256-based pseudorandom functions: [`prf::cshake256::digest`], [`prf::cshake256::hmac`], [`prf::cshake256::kdf`]
 //!
 //! All algorithms are fixed at their highest security level (NIST Level 5, ~256-bit
 //! classical / 128-bit post-quantum security). See each module for a full comparison.

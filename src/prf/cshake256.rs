@@ -19,7 +19,7 @@
 //!      the practical attack cost far higher than the theoretical exponent alone suggests.
 //!
 //!   2. **NIST-standardized sponge construction.** SHAKE256 is defined in FIPS 202 and
-//!      uses a 1600-bit Keccak-p[1600,24] permutation with a 512-bit capacity. The large
+//!      uses a 1600-bit Keccak-p\[1600,24\] permutation with a 512-bit capacity. The large
 //!      capacity means a quantum collision search (BHT algorithm) still requires
 //!      O(2^(capacity/3)) ≈ O(2^170) operations, well above the 128-bit quantum
 //!      collision-resistance floor. BHT additionally assumes quantum random-access memory
