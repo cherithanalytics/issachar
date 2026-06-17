@@ -1,10 +1,12 @@
 //! Post-quantum cryptography primitives.
 //!
-//! This crate exposes four modules:
-//!
-//! - [`kem`] — Key Encapsulation Mechanisms: [`kem::MlKem`], [`kem::ClassicMcEliece`]
+//! - [`kem`] — Key Encapsulation Mechanisms: [`kem::MlKem`], [`kem::FrodoKem`], [`kem::ClassicMcEliece`]
 //! - [`sig`] — Digital Signatures: [`sig::MlDsa`], [`sig::Sphincs`]
 //! - [`prf`] — cSHAKE256-based pseudorandom functions: [`prf::cshake256::digest`], [`prf::cshake256::hmac`], [`prf::cshake256::kdf`]
+//! - [`pbkdf`] — Argon2id password-based key derivation: [`pbkdf::derive`], [`pbkdf::verify`]
+//! - [`symmetric`] — Authenticated encryption: [`symmetric::aegis`] (AEGIS-256X2), [`symmetric::chacha20poly1305`]
+//! - [`classic`] — Classical key pairs used inside hybrid constructions: [`classic::x25519::X25519Key`]
+//! - [`strobe`] — Strobe v1.0.2 handshake transports (NK and KK patterns)
 //!
 //! All algorithms are fixed at their highest security level (NIST Level 5, ~256-bit
 //! classical / 128-bit post-quantum security). See each module for a full comparison.
