@@ -90,6 +90,8 @@ impl core::fmt::Display for Error {
 /// 4. Call `.finish(msg2)` on the handshake — returns a `StrobeNkTransport`.
 pub struct StrobeNkPqcInitiator {
     state: Strobe,
+    cme: ClassicMcEliece,
+    mlkem: MlKem,
     responder_cme_pk: ClassicMcEliecePublicKey,
 }
 
@@ -97,7 +99,12 @@ impl StrobeNkPqcInitiator {
     pub fn new(responder_cme_pk: &ClassicMcEliecePublicKey) -> Self {
         let mut state = Strobe::new(b"StrobeNK_CME8192128_MLKEM1024/v1");
         state.ad(responder_cme_pk.as_ref(), false);
-        Self { state, responder_cme_pk: responder_cme_pk.clone() }
+        Self {
+            state,
+            cme: ClassicMcEliece::new(),
+            mlkem: MlKem::new(),
+            responder_cme_pk: responder_cme_pk.clone(),
+        }
     }
 
     /// Builds msg1 into `out` (must be exactly `PQC_MSG1_LEN` bytes).
@@ -110,15 +117,17 @@ impl StrobeNkPqcInitiator {
         state.ad(prologue.as_ref(), false);
 
         // CME encapsulate.
-        let (ct_cme, ss_cme) = ClassicMcEliece::encapsulate(&self.responder_cme_pk)
+        let (ct_cme, ss_cme) = self
+            .cme
+            .encapsulate(&self.responder_cme_pk)
             .map_err(|_| Error::CmeEncapsulate)?;
         out[..CME_CT_LEN].copy_from_slice(ct_cme.as_ref());
         state.send_clr(&out[..CME_CT_LEN], false);
         state.key(ss_cme.as_ref());
 
         // ML-KEM-1024 ephemeral keypair — pk is encrypted into msg1.
-        let (mlkem_eph_pk, mlkem_eph_sk) = MlKem::keypair()
-            .map_err(|_| Error::MlKemEncapsulate)?;
+        let (mlkem_eph_pk, mlkem_eph_sk) =
+            self.mlkem.keypair().map_err(|_| Error::MlKemEncapsulate)?;
         let pk_range = CME_CT_LEN..CME_CT_LEN + MLKEM_PK_LEN;
         out[pk_range.clone()].copy_from_slice(mlkem_eph_pk.as_ref());
         state.send_enc(&mut out[pk_range], false);
@@ -144,9 +153,12 @@ impl StrobeNkPqcHandshake {
         self.state.recv_enc(&mut ct_buf, false);
 
         // ML-KEM decapsulate with our ephemeral secret key.
-        let ct_mlkem = MlKem::ciphertext_from_bytes(&ct_buf)
-            .ok_or(Error::MlKemDecapsulate)?;
-        let ss_mlkem = MlKem::decapsulate(&self.mlkem_eph_sk, &ct_mlkem)
+        let mlkem = MlKem::new();
+        let ct_mlkem = mlkem
+            .ciphertext_from_bytes(&ct_buf)
+            .map_err(|_| Error::MlKemDecapsulate)?;
+        let ss_mlkem = mlkem
+            .decapsulate(&self.mlkem_eph_sk, &ct_mlkem)
             .map_err(|_| Error::MlKemDecapsulate)?;
         self.state.key(ss_mlkem.as_ref());
 
@@ -167,6 +179,8 @@ impl StrobeNkPqcHandshake {
 ///    and returns a `StrobeNkTransport`.
 pub struct StrobeNkPqcResponder {
     state: Strobe,
+    cme: ClassicMcEliece,
+    mlkem: MlKem,
     sk: ClassicMcElieceSecretKey,
 }
 
@@ -174,7 +188,7 @@ impl StrobeNkPqcResponder {
     pub fn new(sk: ClassicMcElieceSecretKey, pk: &ClassicMcEliecePublicKey) -> Self {
         let mut state = Strobe::new(b"StrobeNK_CME8192128_MLKEM1024/v1");
         state.ad(pk.as_ref(), false);
-        Self { state, sk }
+        Self { state, cme: ClassicMcEliece::new(), mlkem: MlKem::new(), sk }
     }
 
     /// Processes msg1, builds msg2 into `out`.
@@ -189,9 +203,13 @@ impl StrobeNkPqcResponder {
 
         // CME ciphertext arrives in the clear.
         state.recv_clr(&msg1[..CME_CT_LEN], false);
-        let ct_cme = ClassicMcEliece::ciphertext_from_bytes(&msg1[..CME_CT_LEN])
-            .ok_or(Error::CmeDecapsulate)?;
-        let ss_cme = ClassicMcEliece::decapsulate(&self.sk, &ct_cme)
+        let ct_cme = self
+            .cme
+            .ciphertext_from_bytes(&msg1[..CME_CT_LEN])
+            .map_err(|_| Error::CmeDecapsulate)?;
+        let ss_cme = self
+            .cme
+            .decapsulate(&self.sk, &ct_cme)
             .map_err(|_| Error::CmeDecapsulate)?;
         state.key(ss_cme.as_ref());
 
@@ -206,9 +224,13 @@ impl StrobeNkPqcResponder {
         state.recv_mac(&mut mac_buf, false).map_err(|_| Error::MacFailed)?;
 
         // Encapsulate to the initiator's ephemeral ML-KEM public key.
-        let mlkem_eph_pk = MlKem::public_key_from_bytes(&pk_buf)
-            .ok_or(Error::MlKemEncapsulate)?;
-        let (ct_mlkem, ss_mlkem) = MlKem::encapsulate(&mlkem_eph_pk)
+        let mlkem_eph_pk = self
+            .mlkem
+            .public_key_from_bytes(&pk_buf)
+            .map_err(|_| Error::MlKemEncapsulate)?;
+        let (ct_mlkem, ss_mlkem) = self
+            .mlkem
+            .encapsulate(&mlkem_eph_pk)
             .map_err(|_| Error::MlKemEncapsulate)?;
 
         // Encrypt ML-KEM ciphertext into msg2, then key() and MAC.

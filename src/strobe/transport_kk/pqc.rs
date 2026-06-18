@@ -91,6 +91,8 @@ impl core::fmt::Display for Error {
 /// 4. Call `.finish(msg2)` on the handshake — returns a `StrobeNkTransport`.
 pub struct StrobeKkPqcInitiator {
     state: Strobe,
+    cme: ClassicMcEliece,
+    mlkem: MlKem,
     responder_cme_pk: ClassicMcEliecePublicKey,
     initiator_sk: ClassicMcElieceSecretKey,
 }
@@ -104,7 +106,13 @@ impl StrobeKkPqcInitiator {
         let mut state = Strobe::new(b"StrobeKK_CME8192128_MLKEM1024/v1");
         state.ad(responder_cme_pk.as_ref(), false);
         state.ad(initiator_cme_pk.as_ref(), false);
-        Self { state, responder_cme_pk: responder_cme_pk.clone(), initiator_sk }
+        Self {
+            state,
+            cme: ClassicMcEliece::new(),
+            mlkem: MlKem::new(),
+            responder_cme_pk: responder_cme_pk.clone(),
+            initiator_sk,
+        }
     }
 
     /// Builds msg1 into `out` (must be exactly `KK_PQC_MSG1_LEN` bytes).
@@ -117,15 +125,17 @@ impl StrobeKkPqcInitiator {
         state.ad(prologue.as_ref(), false);
 
         // CME encapsulate to responder's static pk.
-        let (ct_cme, ss_cme) = ClassicMcEliece::encapsulate(&self.responder_cme_pk)
+        let (ct_cme, ss_cme) = self
+            .cme
+            .encapsulate(&self.responder_cme_pk)
             .map_err(|_| Error::CmeEncapsulate)?;
         out[..CME_CT_LEN].copy_from_slice(ct_cme.as_ref());
         state.send_clr(&out[..CME_CT_LEN], false);
         state.key(ss_cme.as_ref());
 
         // ML-KEM-1024 ephemeral keypair — pk encrypted into msg1.
-        let (mlkem_eph_pk, mlkem_eph_sk) = MlKem::keypair()
-            .map_err(|_| Error::MlKemEncapsulate)?;
+        let (mlkem_eph_pk, mlkem_eph_sk) =
+            self.mlkem.keypair().map_err(|_| Error::MlKemEncapsulate)?;
         let pk_range = CME_CT_LEN..CME_CT_LEN + MLKEM_PK_LEN;
         out[pk_range.clone()].copy_from_slice(mlkem_eph_pk.as_ref());
         state.send_enc(&mut out[pk_range], false);
@@ -154,9 +164,12 @@ impl StrobeKkPqcHandshake {
         ct_mlkem_buf.copy_from_slice(&msg2[..MLKEM_CT_LEN]);
         self.state.recv_enc(&mut ct_mlkem_buf, false);
 
-        let ct_mlkem = MlKem::ciphertext_from_bytes(&ct_mlkem_buf)
-            .ok_or(Error::MlKemDecapsulate)?;
-        let ss_mlkem = MlKem::decapsulate(&self.mlkem_eph_sk, &ct_mlkem)
+        let mlkem = MlKem::new();
+        let ct_mlkem = mlkem
+            .ciphertext_from_bytes(&ct_mlkem_buf)
+            .map_err(|_| Error::MlKemDecapsulate)?;
+        let ss_mlkem = mlkem
+            .decapsulate(&self.mlkem_eph_sk, &ct_mlkem)
             .map_err(|_| Error::MlKemDecapsulate)?;
         self.state.key(ss_mlkem.as_ref());
 
@@ -165,9 +178,12 @@ impl StrobeKkPqcHandshake {
         ct_cme_buf.copy_from_slice(&msg2[MLKEM_CT_LEN..MLKEM_CT_LEN + CME_CT_LEN]);
         self.state.recv_enc(&mut ct_cme_buf, false);
 
-        let ct_cme_i = ClassicMcEliece::ciphertext_from_bytes(&ct_cme_buf)
-            .ok_or(Error::CmeDecapsulate)?;
-        let ss_cme_i = ClassicMcEliece::decapsulate(&self.initiator_sk, &ct_cme_i)
+        let cme = ClassicMcEliece::new();
+        let ct_cme_i = cme
+            .ciphertext_from_bytes(&ct_cme_buf)
+            .map_err(|_| Error::CmeDecapsulate)?;
+        let ss_cme_i = cme
+            .decapsulate(&self.initiator_sk, &ct_cme_i)
             .map_err(|_| Error::CmeDecapsulate)?;
         self.state.key(ss_cme_i.as_ref());
 
@@ -188,6 +204,8 @@ impl StrobeKkPqcHandshake {
 ///    and returns a `StrobeNkTransport`.
 pub struct StrobeKkPqcResponder {
     state: Strobe,
+    cme: ClassicMcEliece,
+    mlkem: MlKem,
     responder_sk: ClassicMcElieceSecretKey,
     initiator_pk: ClassicMcEliecePublicKey,
 }
@@ -201,7 +219,13 @@ impl StrobeKkPqcResponder {
         let mut state = Strobe::new(b"StrobeKK_CME8192128_MLKEM1024/v1");
         state.ad(responder_pk.as_ref(), false);
         state.ad(initiator_pk.as_ref(), false);
-        Self { state, responder_sk, initiator_pk }
+        Self {
+            state,
+            cme: ClassicMcEliece::new(),
+            mlkem: MlKem::new(),
+            responder_sk,
+            initiator_pk,
+        }
     }
 
     /// Processes msg1, builds msg2 into `out`.
@@ -216,9 +240,13 @@ impl StrobeKkPqcResponder {
 
         // CME ciphertext arrives in the clear.
         state.recv_clr(&msg1[..CME_CT_LEN], false);
-        let ct_cme = ClassicMcEliece::ciphertext_from_bytes(&msg1[..CME_CT_LEN])
-            .ok_or(Error::CmeDecapsulate)?;
-        let ss_cme_r = ClassicMcEliece::decapsulate(&self.responder_sk, &ct_cme)
+        let ct_cme = self
+            .cme
+            .ciphertext_from_bytes(&msg1[..CME_CT_LEN])
+            .map_err(|_| Error::CmeDecapsulate)?;
+        let ss_cme_r = self
+            .cme
+            .decapsulate(&self.responder_sk, &ct_cme)
             .map_err(|_| Error::CmeDecapsulate)?;
         state.key(ss_cme_r.as_ref());
 
@@ -233,16 +261,22 @@ impl StrobeKkPqcResponder {
         state.recv_mac(&mut mac_buf, false).map_err(|_| Error::MacFailed)?;
 
         // Encapsulate to the initiator's ephemeral ML-KEM pk and encrypt ct into msg2.
-        let mlkem_eph_pk = MlKem::public_key_from_bytes(&pk_buf)
-            .ok_or(Error::MlKemEncapsulate)?;
-        let (ct_mlkem, ss_mlkem) = MlKem::encapsulate(&mlkem_eph_pk)
+        let mlkem_eph_pk = self
+            .mlkem
+            .public_key_from_bytes(&pk_buf)
+            .map_err(|_| Error::MlKemEncapsulate)?;
+        let (ct_mlkem, ss_mlkem) = self
+            .mlkem
+            .encapsulate(&mlkem_eph_pk)
             .map_err(|_| Error::MlKemEncapsulate)?;
         out[..MLKEM_CT_LEN].copy_from_slice(ct_mlkem.as_ref());
         state.send_enc(&mut out[..MLKEM_CT_LEN], false);
         state.key(ss_mlkem.as_ref());
 
         // CME encapsulate to initiator's static pk, encrypt ciphertext into msg2.
-        let (ct_cme_i, ss_cme_i) = ClassicMcEliece::encapsulate(&self.initiator_pk)
+        let (ct_cme_i, ss_cme_i) = self
+            .cme
+            .encapsulate(&self.initiator_pk)
             .map_err(|_| Error::CmeEncapsulate)?;
         out[MLKEM_CT_LEN..MLKEM_CT_LEN + CME_CT_LEN].copy_from_slice(ct_cme_i.as_ref());
         state.send_enc(&mut out[MLKEM_CT_LEN..MLKEM_CT_LEN + CME_CT_LEN], false);

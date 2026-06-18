@@ -17,7 +17,9 @@ use issachar::strobe::transport_nk::pqc::{
 };
 
 fn cme_keypair() -> (CmePk, CmeSk) {
-    ClassicMcEliece::keypair().expect("CME keypair generation failed")
+    ClassicMcEliece::new()
+        .keypair()
+        .expect("CME keypair generation failed")
 }
 
 // ── Hybrid variant ─────────────────────────────────────────────────────────

@@ -88,6 +88,7 @@ impl core::fmt::Display for Error {
 /// 4. Call `.finish(msg2)` on the handshake — returns a `StrobeNkTransport`.
 pub struct StrobeNkHybridInitiator {
     state: Strobe,
+    cme: ClassicMcEliece,
     responder_cme_pk: ClassicMcEliecePublicKey,
 }
 
@@ -95,7 +96,7 @@ impl StrobeNkHybridInitiator {
     pub fn new(responder_cme_pk: &ClassicMcEliecePublicKey) -> Self {
         let mut state = Strobe::new(b"StrobeNK_CME8192128_X25519/v1");
         state.ad(responder_cme_pk.as_ref(), false);
-        Self { state, responder_cme_pk: responder_cme_pk.clone() }
+        Self { state, cme: ClassicMcEliece::new(), responder_cme_pk: responder_cme_pk.clone() }
     }
 
     /// Builds msg1 into `out` (must be exactly `HYBRID_MSG1_LEN` bytes).
@@ -111,7 +112,9 @@ impl StrobeNkHybridInitiator {
         state.ad(prologue.as_ref(), false);
 
         // CME encapsulate — produces ciphertext and shared secret.
-        let (ct_cme, ss_cme) = ClassicMcEliece::encapsulate(&self.responder_cme_pk)
+        let (ct_cme, ss_cme) = self
+            .cme
+            .encapsulate(&self.responder_cme_pk)
             .map_err(|_| Error::CmeEncapsulate)?;
         out[..CME_CT_LEN].copy_from_slice(ct_cme.as_ref());
         state.send_clr(&out[..CME_CT_LEN], false);
@@ -171,6 +174,7 @@ impl StrobeNkHybridHandshake {
 ///    and returns a `StrobeNkTransport`.
 pub struct StrobeNkHybridResponder {
     state: Strobe,
+    cme: ClassicMcEliece,
     sk: ClassicMcElieceSecretKey,
 }
 
@@ -178,7 +182,7 @@ impl StrobeNkHybridResponder {
     pub fn new(sk: ClassicMcElieceSecretKey, pk: &ClassicMcEliecePublicKey) -> Self {
         let mut state = Strobe::new(b"StrobeNK_CME8192128_X25519/v1");
         state.ad(pk.as_ref(), false);
-        Self { state, sk }
+        Self { state, cme: ClassicMcEliece::new(), sk }
     }
 
     /// Processes msg1, builds msg2 into `out`.
@@ -193,9 +197,13 @@ impl StrobeNkHybridResponder {
 
         // CME ciphertext arrives in the clear.
         state.recv_clr(&msg1[..CME_CT_LEN], false);
-        let ct_cme = ClassicMcEliece::ciphertext_from_bytes(&msg1[..CME_CT_LEN])
-            .ok_or(Error::CmeDecapsulate)?;
-        let ss_cme = ClassicMcEliece::decapsulate(&self.sk, &ct_cme)
+        let ct_cme = self
+            .cme
+            .ciphertext_from_bytes(&msg1[..CME_CT_LEN])
+            .map_err(|_| Error::CmeDecapsulate)?;
+        let ss_cme = self
+            .cme
+            .decapsulate(&self.sk, &ct_cme)
             .map_err(|_| Error::CmeDecapsulate)?;
         state.key(ss_cme.as_ref());
 

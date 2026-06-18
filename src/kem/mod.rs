@@ -46,7 +46,7 @@
 //! - You are using it in a hybrid scheme where classical cryptography can cover for the
 //!   possibility that Module-LWE will be broken.
 //! - You need PQC-only PFS and want fast key generation for the ephemeral key (use a different
-//!   algorithm for the static key to be safe, like [`ClassicMcEliece`].
+//!   algorithm for the static key to be safe, like [`ClassicMcEliece`]).
 //!
 //! ## Use [`FrodoKem`] when:
 //!

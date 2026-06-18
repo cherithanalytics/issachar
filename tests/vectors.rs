@@ -59,7 +59,7 @@ fn ml_kem_1024_decapsulate_matches_known_shared_secret() {
     let sk = kem.secret_key_from_bytes(&sk_bytes).unwrap().to_owned();
     let ct = kem.ciphertext_from_bytes(&ct_bytes).unwrap().to_owned();
 
-    let ss = MlKem::decapsulate(&sk, &ct).unwrap();
+    let ss = MlKem::new().decapsulate(&sk, &ct).unwrap();
     assert_eq!(ss.as_ref(), expected.as_slice());
 }
 
@@ -77,7 +77,7 @@ fn frodokem_1344_aes_decapsulate_matches_known_shared_secret() {
     let sk = kem.secret_key_from_bytes(&sk_bytes).unwrap().to_owned();
     let ct = kem.ciphertext_from_bytes(&ct_bytes).unwrap().to_owned();
 
-    let ss = FrodoKem::decapsulate(&sk, &ct).unwrap();
+    let ss = FrodoKem::new().decapsulate(&sk, &ct).unwrap();
     assert_eq!(ss.as_ref(), expected.as_slice());
 }
 
@@ -95,7 +95,7 @@ fn classic_mceliece_8192128f_decapsulate_matches_known_shared_secret() {
     let sk = kem.secret_key_from_bytes(&sk_bytes).unwrap().to_owned();
     let ct = kem.ciphertext_from_bytes(&ct_bytes).unwrap().to_owned();
 
-    let ss = ClassicMcEliece::decapsulate(&sk, &ct).unwrap();
+    let ss = ClassicMcEliece::new().decapsulate(&sk, &ct).unwrap();
     assert_eq!(ss.as_ref(), expected.as_slice());
 }
 

@@ -36,7 +36,7 @@ use super::SharedSecret;
 /// - Tiny ciphertext (208 B) — ideal when the encapsulated ciphertext must
 ///   be transmitted repeatedly but the public key can be stored once
 ///   (e.g. in a certificate or a static configuration file).
-/// - Extremely fast signing and verification, even faster than RSA.
+/// - Extremely fast encapsulation and decapsulation, even faster than RSA.
 ///
 /// # Cons
 ///
@@ -46,30 +46,89 @@ use super::SharedSecret;
 /// - Key generation is slow even with the `f` variant; not suitable for
 ///   ephemeral key exchange patterns where a fresh keypair is needed per
 ///   session.
-pub struct ClassicMcEliece;
+///
+/// # Reuse
+///
+/// Construct once with [`ClassicMcEliece::new`] and reuse across operations —
+/// each instance owns the underlying liboqs algorithm object, so reusing it
+/// avoids re-allocating that object on every encapsulation/decapsulation. This
+/// matters most in a tight handshake loop where a responder decapsulates with
+/// the same static key repeatedly.
+pub struct ClassicMcEliece {
+    kem: Kem,
+}
+
+impl Default for ClassicMcEliece {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl ClassicMcEliece {
-    pub fn keypair() -> Result<(PublicKey, SecretKey)> {
+    /// Length in bytes of a serialized public key.
+    pub const PUBLIC_KEY_LEN: usize = 1_357_824;
+    /// Length in bytes of a serialized secret key.
+    pub const SECRET_KEY_LEN: usize = 14_120;
+    /// Length in bytes of a ciphertext.
+    pub const CIPHERTEXT_LEN: usize = 208;
+    /// Length in bytes of the encapsulated shared secret.
+    pub const SHARED_SECRET_LEN: usize = 32;
+
+    /// Construct a reusable Classic McEliece 8192128f instance.
+    ///
+    /// Infallible: Classic McEliece 8192128f is always compiled in via the
+    /// crate's `oqs` feature set, so the underlying algorithm object can always
+    /// be created.
+    pub fn new() -> Self {
         oqs::init();
-        let kem = Kem::new(Algorithm::ClassicMcEliece8192128f)?;
-        kem.keypair()
+        Self {
+            kem: Kem::new(Algorithm::ClassicMcEliece8192128f)
+                .expect("Classic McEliece 8192128f is compiled in"),
+        }
     }
 
-    pub fn encapsulate(public_key: &PublicKey) -> Result<(Ciphertext, SharedSecret)> {
-        oqs::init();
-        let kem = Kem::new(Algorithm::ClassicMcEliece8192128f)?;
-        kem.encapsulate(public_key)
+    pub fn keypair(&self) -> Result<(PublicKey, SecretKey)> {
+        self.kem.keypair()
     }
 
-    pub fn decapsulate(secret_key: &SecretKey, ciphertext: &Ciphertext) -> Result<SharedSecret> {
-        oqs::init();
-        let kem = Kem::new(Algorithm::ClassicMcEliece8192128f)?;
-        kem.decapsulate(secret_key, ciphertext)
+    pub fn encapsulate(&self, public_key: &PublicKey) -> Result<(Ciphertext, SharedSecret)> {
+        self.kem.encapsulate(public_key)
     }
 
-    pub fn ciphertext_from_bytes(bytes: &[u8]) -> Option<Ciphertext> {
-        oqs::init();
-        let kem = Kem::new(Algorithm::ClassicMcEliece8192128f).ok()?;
-        kem.ciphertext_from_bytes(bytes).map(|r| r.to_owned())
+    pub fn decapsulate(&self, secret_key: &SecretKey, ciphertext: &Ciphertext) -> Result<SharedSecret> {
+        self.kem.decapsulate(secret_key, ciphertext)
+    }
+
+    /// Reconstruct a ciphertext from its serialized bytes.
+    ///
+    /// Returns [`Error::InvalidLength`](oqs::Error::InvalidLength) if `bytes`
+    /// is not exactly [`CIPHERTEXT_LEN`](Self::CIPHERTEXT_LEN) bytes long.
+    pub fn ciphertext_from_bytes(&self, bytes: &[u8]) -> Result<Ciphertext> {
+        self.kem
+            .ciphertext_from_bytes(bytes)
+            .map(|r| r.to_owned())
+            .ok_or(oqs::Error::InvalidLength)
+    }
+
+    /// Reconstruct a public key from its serialized bytes.
+    ///
+    /// Returns [`Error::InvalidLength`](oqs::Error::InvalidLength) if `bytes`
+    /// is not exactly [`PUBLIC_KEY_LEN`](Self::PUBLIC_KEY_LEN) bytes long.
+    pub fn public_key_from_bytes(&self, bytes: &[u8]) -> Result<PublicKey> {
+        self.kem
+            .public_key_from_bytes(bytes)
+            .map(|r| r.to_owned())
+            .ok_or(oqs::Error::InvalidLength)
+    }
+
+    /// Reconstruct a secret key from its serialized bytes.
+    ///
+    /// Returns [`Error::InvalidLength`](oqs::Error::InvalidLength) if `bytes`
+    /// is not exactly [`SECRET_KEY_LEN`](Self::SECRET_KEY_LEN) bytes long.
+    pub fn secret_key_from_bytes(&self, bytes: &[u8]) -> Result<SecretKey> {
+        self.kem
+            .secret_key_from_bytes(bytes)
+            .map(|r| r.to_owned())
+            .ok_or(oqs::Error::InvalidLength)
     }
 }

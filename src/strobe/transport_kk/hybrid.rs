@@ -89,6 +89,7 @@ impl core::fmt::Display for Error {
 /// 4. Call `.finish(msg2)` on the handshake — returns a `StrobeNkTransport`.
 pub struct StrobeKkHybridInitiator {
     state: Strobe,
+    cme: ClassicMcEliece,
     responder_cme_pk: ClassicMcEliecePublicKey,
     initiator_sk: ClassicMcElieceSecretKey,
 }
@@ -102,7 +103,12 @@ impl StrobeKkHybridInitiator {
         let mut state = Strobe::new(b"StrobeKK_CME8192128_X25519/v1");
         state.ad(responder_cme_pk.as_ref(), false);
         state.ad(initiator_cme_pk.as_ref(), false);
-        Self { state, responder_cme_pk: responder_cme_pk.clone(), initiator_sk }
+        Self {
+            state,
+            cme: ClassicMcEliece::new(),
+            responder_cme_pk: responder_cme_pk.clone(),
+            initiator_sk,
+        }
     }
 
     /// Builds msg1 into `out` (must be exactly `KK_HYBRID_MSG1_LEN` bytes).
@@ -115,7 +121,9 @@ impl StrobeKkHybridInitiator {
         state.ad(prologue.as_ref(), false);
 
         // CME encapsulate to responder's static pk.
-        let (ct_cme, ss_cme) = ClassicMcEliece::encapsulate(&self.responder_cme_pk)
+        let (ct_cme, ss_cme) = self
+            .cme
+            .encapsulate(&self.responder_cme_pk)
             .map_err(|_| Error::CmeEncapsulate)?;
         out[..CME_CT_LEN].copy_from_slice(ct_cme.as_ref());
         state.send_clr(&out[..CME_CT_LEN], false);
@@ -162,9 +170,12 @@ impl StrobeKkHybridHandshake {
         ct_buf.copy_from_slice(&msg2[X25519_PK_LEN..X25519_PK_LEN + CME_CT_LEN]);
         self.state.recv_enc(&mut ct_buf, false);
 
-        let ct_cme_i = ClassicMcEliece::ciphertext_from_bytes(&ct_buf)
-            .ok_or(Error::CmeDecapsulate)?;
-        let ss_cme_i = ClassicMcEliece::decapsulate(&self.initiator_sk, &ct_cme_i)
+        let cme = ClassicMcEliece::new();
+        let ct_cme_i = cme
+            .ciphertext_from_bytes(&ct_buf)
+            .map_err(|_| Error::CmeDecapsulate)?;
+        let ss_cme_i = cme
+            .decapsulate(&self.initiator_sk, &ct_cme_i)
             .map_err(|_| Error::CmeDecapsulate)?;
         self.state.key(ss_cme_i.as_ref());
 
@@ -185,6 +196,7 @@ impl StrobeKkHybridHandshake {
 ///    and returns a `StrobeNkTransport`.
 pub struct StrobeKkHybridResponder {
     state: Strobe,
+    cme: ClassicMcEliece,
     responder_sk: ClassicMcElieceSecretKey,
     initiator_pk: ClassicMcEliecePublicKey,
 }
@@ -198,7 +210,7 @@ impl StrobeKkHybridResponder {
         let mut state = Strobe::new(b"StrobeKK_CME8192128_X25519/v1");
         state.ad(responder_pk.as_ref(), false);
         state.ad(initiator_pk.as_ref(), false);
-        Self { state, responder_sk, initiator_pk }
+        Self { state, cme: ClassicMcEliece::new(), responder_sk, initiator_pk }
     }
 
     /// Processes msg1, builds msg2 into `out`.
@@ -213,9 +225,13 @@ impl StrobeKkHybridResponder {
 
         // CME ciphertext arrives in the clear.
         state.recv_clr(&msg1[..CME_CT_LEN], false);
-        let ct_cme = ClassicMcEliece::ciphertext_from_bytes(&msg1[..CME_CT_LEN])
-            .ok_or(Error::CmeDecapsulate)?;
-        let ss_cme_r = ClassicMcEliece::decapsulate(&self.responder_sk, &ct_cme)
+        let ct_cme = self
+            .cme
+            .ciphertext_from_bytes(&msg1[..CME_CT_LEN])
+            .map_err(|_| Error::CmeDecapsulate)?;
+        let ss_cme_r = self
+            .cme
+            .decapsulate(&self.responder_sk, &ct_cme)
             .map_err(|_| Error::CmeDecapsulate)?;
         state.key(ss_cme_r.as_ref());
 
@@ -241,7 +257,9 @@ impl StrobeKkHybridResponder {
         ss_x25519.zeroize();
 
         // CME encapsulate to initiator's static pk, encrypt ciphertext into msg2.
-        let (ct_cme_i, ss_cme_i) = ClassicMcEliece::encapsulate(&self.initiator_pk)
+        let (ct_cme_i, ss_cme_i) = self
+            .cme
+            .encapsulate(&self.initiator_pk)
             .map_err(|_| Error::CmeEncapsulate)?;
         out[X25519_PK_LEN..X25519_PK_LEN + CME_CT_LEN].copy_from_slice(ct_cme_i.as_ref());
         state.send_enc(&mut out[X25519_PK_LEN..X25519_PK_LEN + CME_CT_LEN], false);
